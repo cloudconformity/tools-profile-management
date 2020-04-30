@@ -28,6 +28,7 @@ const { version } = require("../package.json");
 			"Comma-separated Target Account IDs",
 			list => list.split(",")
 		)
+		.requiredOption("-n, --notes <Profile Apply Notes>", "Notes to use when applying Profiles")
 		.option("-m, --master-profile-id <Master Profile ID>", "Optional Master Profile ID")
 		.parse();
 
@@ -37,7 +38,8 @@ const { version } = require("../package.json");
 		region,
 		apiKey,
 		debug,
-		masterProfileId
+		masterProfileId,
+		notes
 	} = program;
 	const apiEndpoint = program.apiEndpoint || `https://${region}-api.cloudconformity.com`;
 	if (debug) {
@@ -51,14 +53,18 @@ const { version } = require("../package.json");
 			apiKey,
 			apiEndpoint
 		});
-		await profileService.applyBulk({ profileIds, accountIds, masterProfileId });
+		await profileService.applyBulk({ profileIds, accountIds, masterProfileId, notes });
 		logger.info("Profiles were applied successfully", profileIds.length, accountIds.length);
 	} catch (error) {
 		logger.error(
 			"Error [%s] occurred while applying Profiles to Accounts",
 			error.code || error.message
 		);
-		logger.debug("Error details: %o", error);
-		throw error;
+		logger.debug("Error details: %s", JSON.stringify(error, null, 2));
+		if (error.response) {
+			logger.error("Error response body: %s", JSON.stringify(error.response.body, null, 2));
+		}
+		// eslint-disable-next-line no-process-exit
+		process.exit(1);
 	}
 })();
