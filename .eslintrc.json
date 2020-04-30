@@ -1,0 +1,30 @@
+{
+	"env": {
+		"node": true,
+		"jest/globals": true
+	},
+	"extends": [
+		"eslint:recommended",
+		"plugin:node/recommended",
+		"plugin:security/recommended",
+		"plugin:jest/recommended",
+		"plugin:jest/style",
+		"prettier"
+	],
+	"plugins": ["prettier", "jest", "security"],
+	"parserOptions": {
+		"ecmaVersion": 2018
+	},
+	"rules": {
+		"curly": "error",
+		"no-console": "error",
+		"no-shadow": ["error", { "builtinGlobals": false, "hoist": "all" }],
+		"no-var": "error",
+		"node/no-unpublished-require": "off",
+		"prefer-const": "error",
+		"prettier/prettier": "warn",
+		"one-var": ["error", "never"],
+		"quotes": ["warn", "double", { "avoidEscape": true }],
+		"security/detect-object-injection": "off"
+	}
+}
