@@ -2,7 +2,7 @@
 const logger = require("../utils/logger");
 const ConformityService = require("./ConformityService");
 const Bluebird = require("bluebird");
-const profileLoadConcurrency = Number(process.env.CC_PROFILE_LOAD_CONCURRENCY) || 1;
+const profileLoadConcurrency = Number(process.env.CC_PROFILE_LOAD_CONCURRENCY) || 5;
 const profileApplyMode = process.env.CC_PROFILE_APPLY_MODE || "overwrite";
 
 class ProfileService extends ConformityService {
@@ -21,34 +21,33 @@ class ProfileService extends ConformityService {
 	}
 
 	async save(profile) {
-		const data = JSON.stringify(profile);
 		if (profile.data.id) {
 			logger.debug("Updating Profile");
 			return this.request({
 				path: `/v1/profiles/${profile.data.id}`,
 				method: "PATCH",
-				data
+				data: profile
 			});
 		} else {
 			logger.debug("Saving new Profile");
 			return this.request({
 				path: "/v1/profiles",
 				method: "POST",
-				data
+				data: profile
 			});
 		}
 	}
 
 	async apply({ profileId, accountIds, notes }) {
 		logger.info("Applying Profile [id=%s] to %d Accounts", profileId, accountIds.length);
-		const data = JSON.stringify({
+		const data = {
 			meta: {
 				accountIds,
 				types: ["rule"],
 				mode: profileApplyMode,
 				notes
 			}
-		});
+		};
 		return this.request({
 			path: `/v1/profiles/${profileId}/apply`,
 			method: "POST",
@@ -56,10 +55,9 @@ class ProfileService extends ConformityService {
 		});
 	}
 
-	async applyBulk({ profileIds, accountIds, masterProfileId }) {
+	async applyBulk({ profileIds, accountIds, masterProfileId, notes }) {
 		logger.info("Applying %d Profiles to %d Accounts", profileIds.length, accountIds.length);
 		const profiles = await this.loadBulk(profileIds);
-		const notes = ProfileService.getNotes(profiles);
 		const masterProfile = ProfileService.merge(profiles);
 		masterProfile.data.id = masterProfileId;
 		logger.info("Saving Master Profile");
@@ -68,15 +66,48 @@ class ProfileService extends ConformityService {
 	}
 
 	static merge(profiles) {
-		logger.debug("merge Not implemented yet");
 		logger.info("Merging Profiles");
-		return { data: {} };
-	}
+		const mergedProfile = {
+			data: {
+				type: "profiles",
+				attributes: {
+					name: "Master Profile - " + new Date().toLocaleString(),
+					description: "Created from mixing " + profiles.length + " Profiles"
+				},
+				relationships: { ruleSettings: { data: [] } }
+			}
+		};
+		const allRuleSettings = profiles
+			.reduce((allSettings, profile) => allSettings.concat(profile.included), [])
+			.filter(setting => setting.type === "rules");
+		const mergedRuleSettingsMap = allRuleSettings.reduce((ruleSettingsMap, ruleSetting) => {
+			ruleSettingsMap.set(ruleSetting.id, ruleSetting);
+			return ruleSettingsMap;
+		}, new Map());
+		const mergedRuleSettings = Array.from(mergedRuleSettingsMap.values());
+		logger.info(
+			"Merged %d Profiles including %d Rule Settings to a Master Profile including %d Rule Settings",
+			profiles.length,
+			allRuleSettings.length,
+			mergedRuleSettings.length
+		);
+		const sanitisedRuleSettings = mergedRuleSettings.map(ruleSetting => {
+			const copy = JSON.parse(JSON.stringify(ruleSetting));
+			if (!copy.attributes.enabled) {
+				delete copy.attributes.extraSettings;
+			}
+			return copy;
+		});
+		mergedProfile.included = sanitisedRuleSettings;
 
-	static getNotes(profiles) {
-		logger.debug("getNotes Not implemented yet");
-		logger.info("Composing notes");
-		return "";
+		mergedProfile.data.relationships.ruleSettings.data = sanitisedRuleSettings.map(
+			ruleSetting => ({
+				id: ruleSetting.id,
+				type: ruleSetting.type
+			})
+		);
+
+		return mergedProfile;
 	}
 }
 module.exports = ProfileService;
