@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/cloudconformity/tools-profile-management#readme",
   "dependencies": {
+    "bluebird": "^3.7.2",
     "commander": "^5.1.0",
+    "got": "^11.0.2",
     "winston": "^3.2.1"
   },
   "devDependencies": {
