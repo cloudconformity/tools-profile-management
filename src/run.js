@@ -2,7 +2,6 @@
 
 const { Command } = require("commander");
 const { version } = require("../package.json");
-const ProfileService = require("./services/ProfileService");
 
 (async () => {
 	const program = new Command();
@@ -29,9 +28,17 @@ const ProfileService = require("./services/ProfileService");
 			"Comma-separated Target Account IDs",
 			list => list.split(",")
 		)
+		.option("-m, --master-profile-id <Master Profile ID>", "Optional Master Profile ID")
 		.parse();
 
-	const { profiles: profileIds, accounts: accountIds, region, apiKey, debug } = program;
+	const {
+		profiles: profileIds,
+		accounts: accountIds,
+		region,
+		apiKey,
+		debug,
+		masterProfileId
+	} = program;
 	const apiEndpoint = program.apiEndpoint || `https://${region}-api.cloudconformity.com`;
 	if (debug) {
 		// Enable debug logging
@@ -39,12 +46,12 @@ const ProfileService = require("./services/ProfileService");
 	}
 	const logger = require("./utils/logger");
 	try {
+		const ProfileService = require("./services/ProfileService");
 		const profileService = new ProfileService({
 			apiKey,
 			apiEndpoint
 		});
-		logger.info("Applying %d Profiles to %d Accounts...", profileIds.length, accountIds.length);
-		await profileService.applyBulk(profileIds, accountIds);
+		await profileService.applyBulk({ profileIds, accountIds, masterProfileId });
 		logger.info("Profiles were applied successfully", profileIds.length, accountIds.length);
 	} catch (error) {
 		logger.error(
