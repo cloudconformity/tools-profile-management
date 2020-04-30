@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/cloudconformity/tools-profile-management#readme",
   "dependencies": {
-    "utils": "github:cloudconformity/utils#v1.2.0"
+    "commander": "^5.1.0",
+    "utils": "github:cloudconformity/utils#v1.2.0",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "eslint": "^6.8.0",
