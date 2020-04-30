@@ -49,5 +49,8 @@
       "pre-commit": "lint-staged",
       "pre-push": "npm run check"
     }
+  },
+  "bin": {
+    "apply": "./src/apply.js"
   }
 }
