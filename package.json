@@ -17,7 +17,10 @@
     "url": "https://cloudconformity.atlassian.net/browse/PD"
   },
   "homepage": "https://github.com/cloudconformity/tools-profile-management#readme",
-  "dependencies": {},
+  "dependencies": {
+    "commander": "^5.1.0",
+    "winston": "^3.2.1"
+  },
   "devDependencies": {
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
