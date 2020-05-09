@@ -4,8 +4,14 @@ const ConformityService = require("./ConformityService");
 const Bluebird = require("bluebird");
 const profileLoadConcurrency = Number(process.env.CC_PROFILE_LOAD_CONCURRENCY) || 5;
 const profileApplyMode = process.env.CC_PROFILE_APPLY_MODE || "overwrite";
+const RuleService = require("./RuleService");
 
 class ProfileService extends ConformityService {
+	constructor({ apiKey, apiEndpoint }) {
+		super({ apiKey, apiEndpoint });
+		this.ruleService = new RuleService({ apiKey, apiEndpoint });
+	}
+
 	async load(profileId) {
 		logger.debug("Loading Profile %s", profileId);
 		return this.request({
@@ -20,20 +26,72 @@ class ProfileService extends ConformityService {
 		});
 	}
 
+	async sanitise(profile) {
+		const sanitisedProfile = JSON.parse(JSON.stringify(profile));
+		if (Array.isArray(sanitisedProfile.included)) {
+			const rules = await this.ruleService.loadAll();
+			sanitisedProfile.included = sanitisedProfile.included.map(item => {
+				if (item.type !== "rules") {
+					return item;
+				}
+				const ruleSetting = item;
+				if (!ruleSetting.attributes.enabled) {
+					delete ruleSetting.attributes.extraSettings;
+				}
+				if (Array.isArray(ruleSetting.attributes.extraSettings)) {
+					ruleSetting.attributes.extraSettings = ruleSetting.attributes.extraSettings.filter(
+						extraSetting => {
+							if (extraSetting.hidden || extraSetting.readOnly) {
+								logger.debug(
+									"Removing read-only / hidden extra setting %s from rule %s",
+									extraSetting.name,
+									ruleSetting.id
+								);
+								return false;
+							}
+							if (Array.isArray(extraSetting.values)) {
+								if (extraSetting.values.some(valueItem => !valueItem.value)) {
+									logger.debug(
+										"Removing empty extra setting %s from rule %s",
+										extraSetting.name,
+										ruleSetting.id
+									);
+									return false;
+								}
+							}
+							return true;
+						}
+					);
+				}
+				const matchingRule = rules.find(rule => rule.id === ruleSetting.id);
+				if (matchingRule.multiRiskLevel && ruleSetting.attributes.riskLevel) {
+					logger.debug(
+						"Removing risk level from multi risk level rule %s",
+						matchingRule.id
+					);
+					delete ruleSetting.attributes.riskLevel;
+				}
+				return ruleSetting;
+			});
+		}
+		return sanitisedProfile;
+	}
+
 	async save(profile) {
-		if (profile.data.id) {
+		const sanitisedProfile = await this.sanitise(profile);
+		if (sanitisedProfile.data.id) {
 			logger.debug("Updating Profile");
 			return this.request({
-				path: `/v1/profiles/${profile.data.id}`,
+				path: `/v1/profiles/${sanitisedProfile.data.id}`,
 				method: "PATCH",
-				data: profile
+				data: sanitisedProfile
 			});
 		} else {
 			logger.debug("Saving new Profile");
 			return this.request({
 				path: "/v1/profiles",
 				method: "POST",
-				data: profile
+				data: sanitisedProfile
 			});
 		}
 	}
@@ -91,16 +149,8 @@ class ProfileService extends ConformityService {
 			allRuleSettings.length,
 			mergedRuleSettings.length
 		);
-		const sanitisedRuleSettings = mergedRuleSettings.map(ruleSetting => {
-			const copy = JSON.parse(JSON.stringify(ruleSetting));
-			if (!copy.attributes.enabled) {
-				delete copy.attributes.extraSettings;
-			}
-			return copy;
-		});
-		mergedProfile.included = sanitisedRuleSettings;
-
-		mergedProfile.data.relationships.ruleSettings.data = sanitisedRuleSettings.map(
+		mergedProfile.included = mergedRuleSettings;
+		mergedProfile.data.relationships.ruleSettings.data = mergedRuleSettings.map(
 			ruleSetting => ({
 				id: ruleSetting.id,
 				type: ruleSetting.type

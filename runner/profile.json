@@ -1,0 +1,15 @@
+{
+	"data": {
+		"type": "profiles",
+		"attributes": {
+			"name": "Master Profile - 5/8/2020, 11:51:16 AM",
+			"description": "Created from mixing 52 Profiles"
+		},
+		"relationships": {
+			"ruleSettings": {
+				"data": []
+			}
+		}
+	},
+	"included": []
+}
