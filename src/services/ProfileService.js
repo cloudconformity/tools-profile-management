@@ -50,7 +50,16 @@ class ProfileService extends ConformityService {
 								return false;
 							}
 							if (Array.isArray(extraSetting.values)) {
-								if (extraSetting.values.some(valueItem => !valueItem.value)) {
+								const hasEmptyItem = extraSetting.values.some(valueItem => {
+									if (!valueItem) {
+										return true;
+									}
+									if (typeof valueItem === "string") {
+										return valueItem === "";
+									}
+									return !valueItem.value;
+								});
+								if (hasEmptyItem) {
 									logger.debug(
 										"Removing empty extra setting %s from rule %s",
 										extraSetting.name,
