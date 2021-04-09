@@ -1,6 +1,6 @@
 {
 	"name": "tools-profile-management",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "",
 	"scripts": {
 		"check": "npm run lint && npm run coverage",
