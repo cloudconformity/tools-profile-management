@@ -1,56 +1,57 @@
 {
-	"name": "tools-profile-management",
-	"version": "1.0.2",
-	"description": "",
-	"scripts": {
-		"check": "npm run lint && npm run coverage",
-		"coverage": "npm run test -- --coverage --silent",
-		"test": "jest --passWithNoTests",
-		"test:watch": "npm test -- --watch",
-		"lint": "eslint '**/*.js' --ignore-path .gitignore",
-		"lint:fix": "npm run lint -- --fix"
-	},
-	"repository": "github:cloudconformity/tools-profile-management",
-	"author": "Cloud Conformity",
-	"license": "SEE LICENSE IN LICENSE",
-	"bugs": {
-		"url": "https://cloudconformity.atlassian.net/browse/PD"
-	},
-	"homepage": "https://github.com/cloudconformity/tools-profile-management#readme",
-	"dependencies": {
-		"bluebird": "^3.7.2",
-		"commander": "^5.1.0",
-		"got": "^11.0.2",
-		"jsonapi-serializer": "^3.6.6",
-		"winston": "^3.2.1"
-	},
-	"devDependencies": {
-		"eslint": "^6.8.0",
-		"eslint-config-prettier": "^6.10.0",
-		"eslint-plugin-jest": "^23.7.0",
-		"eslint-plugin-node": "^11.0.0",
-		"eslint-plugin-prettier": "^3.1.2",
-		"eslint-plugin-security": "^1.4.0",
-		"husky": "^4.2.1",
-		"jest": "^25.1.0",
-		"lint-staged": "^10.0.7",
-		"prettier": "^1.19.1"
-	},
-	"engines": {
-		"node": ">=14.15.0"
-	},
-	"lint-staged": {
-		"**/*.js": [
-			"npm run lint:fix"
-		]
-	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged",
-			"pre-push": "npm run check"
-		}
-	},
-	"bin": {
-		"apply": "./src/apply.js"
-	}
+  "name": "tools-profile-management",
+  "version": "1.0.2",
+  "description": "",
+  "scripts": {
+    "check": "npm run lint && npm run coverage",
+    "coverage": "npm run test -- --coverage --silent",
+    "test": "jest --passWithNoTests",
+    "test:watch": "npm test -- --watch",
+    "lint": "eslint '**/*.js' --ignore-path .gitignore",
+    "lint:fix": "npm run lint -- --fix"
+  },
+  "repository": "github:cloudconformity/tools-profile-management",
+  "author": "Cloud Conformity",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://cloudconformity.atlassian.net/browse/PD"
+  },
+  "homepage": "https://github.com/cloudconformity/tools-profile-management#readme",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "commander": "^5.1.0",
+    "got": "^11.0.2",
+    "jsonapi-serializer": "^3.6.6",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.11.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-jest": "^23.7.0",
+    "eslint-plugin-node": "^11.0.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-plugin-security": "^1.4.0",
+    "husky": "^4.2.1",
+    "jest": "^25.1.0",
+    "lint-staged": "^10.0.7",
+    "prettier": "^1.19.1"
+  },
+  "engines": {
+    "node": "^16",
+    "npm": "^8"
+  },
+  "lint-staged": {
+    "**/*.js": [
+      "npm run lint:fix"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run check"
+    }
+  },
+  "bin": {
+    "apply": "./src/apply.js"
+  }
 }
