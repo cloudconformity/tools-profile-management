@@ -20,7 +20,7 @@
   "dependencies": {
     "bluebird": "^3.7.2",
     "commander": "^5.1.0",
-    "got": "^11.0.2",
+    "got": "^12.5.3",
     "jsonapi-serializer": "^3.6.6",
     "winston": "^3.2.1"
   },
