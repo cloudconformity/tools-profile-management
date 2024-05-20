@@ -39,8 +39,8 @@ class ProfileService extends ConformityService {
 					delete ruleSetting.attributes.extraSettings;
 				}
 				if (Array.isArray(ruleSetting.attributes.extraSettings)) {
-					ruleSetting.attributes.extraSettings = ruleSetting.attributes.extraSettings.filter(
-						extraSetting => {
+					ruleSetting.attributes.extraSettings =
+						ruleSetting.attributes.extraSettings.filter(extraSetting => {
 							if (extraSetting.hidden || extraSetting.readOnly) {
 								logger.debug(
 									"Removing read-only / hidden extra setting %s from rule %s",
@@ -69,8 +69,7 @@ class ProfileService extends ConformityService {
 								}
 							}
 							return true;
-						}
-					);
+						});
 				}
 				const matchingRule = rules.find(rule => rule.id === ruleSetting.id);
 				if (matchingRule.multiRiskLevel && ruleSetting.attributes.riskLevel) {
